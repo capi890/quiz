@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz sobre Foguetes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        #quiz-container, #name-container {
+            margin-bottom: 20px;
+        }
+
+        #choices button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #choices button:hover {
+            background-color: #0056b3;
+        }
+
+        #choices button.selected {
+            background-color: #FFD700;
+            color: #000;
+        }
+
+        #next-button, #restart-button, #clear-ranking-button {
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #next-button:hover, #restart-button:hover {
+            background-color: #218838;
+        }
+
+        #ranking {
+            margin-top: 20px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quiz sobre Foguetes</h1>
+        <div id="name-container">
+            <input type="text" id="name-input" placeholder="Digite seu nome">
+            <select id="difficulty-select">
+                <option value="" disabled selected>Selecione a Dificuldade</option>
+                <option value="easy">Fácil</option>
+                <option value="medium">Médio</option>
+                <option value="hard">Difícil</option>
+            </select>
+            <button onclick="startQuiz()">Iniciar Quiz</button>
+        </div>
+        <div id="quiz-container" style="display: none;">
+            <div id="question"></div>
+            <div id="choices"></div>
+            <button id="next-button" onclick="nextQuestion()" style="display: none;">Próxima Pergunta</button>
+        </div>
+        <div id="result"></div>
+        <button id="restart-button" onclick="restartQuiz()" style="display: none;">Reiniciar Quiz</button>
+        <div id="ranking" style="display: none;">
+            <h2>Ranking Pessoal</h2>
+            <h3 id="ranking-title"></h3>
+            <ul id="ranking-list"></ul>
+            <button id="clear-ranking-button" onclick="clearRanking()" style="display: none;">Limpar Ranking</button>
+        </div>
+    </div>
+    <script>
+        const questions = {
+            easy: [
+                { question: "Qual foi o primeiro foguete a levar um humano ao espaço?", choices: ["Vostok 1", "Apollo 11", "Falcon 9", "Saturn V"], correct: "Vostok 1" },
+                { question: "Qual é o menor foguete da NASA?", choices: ["Titan I", "Juno I", "Redstone", "Atlas"], correct: "Redstone" },
+                { question: "O que é um foguete?", choices: ["Um tipo de avião", "Um veículo espacial", "Um satélite", "Uma estação espacial"], correct: "Um veículo espacial" },
+                { question: "Qual é a primeira etapa do lançamento de um foguete?", choices: ["Queima do combustível", "Separação do estágio", "Decolagem", "Alcance da órbita"], correct: "Decolagem" },
+                { question: "Quem foi o primeiro homem a andar na Lua?", choices: ["Neil Armstrong", "Buzz Aldrin", "Yuri Gagarin", "Michael Collins"], correct: "Neil Armstrong" },
+                { question: "Qual é o combustível mais comum usado em foguetes?", choices: ["Água", "Querosene", "Oxigênio", "Hidrogênio"], correct: "Querosene" },
+                { question: "Qual foguete é conhecido por sua grande altura?", choices: ["Falcon 9", "Saturn V", "Atlas V", "Soyuz"], correct: "Saturn V" },
+                { question: "Qual é a função de um foguete?", choices: ["Levar pessoas", "Criar satélites", "Transportar cargas", "Todas as anteriores"], correct: "Todas as anteriores" },
+                { question: "Quem foi o primeiro astronauta brasileiro?", choices: ["Marcos Pontes", "Sérgio Queiroz", "José Carlos", "Antonio Braga"], correct: "Marcos Pontes" },
+                { question: "Qual é a velocidade mínima para um foguete alcançar o espaço?", choices: ["28 km/h", "100 km/h", "1.000 km/h", "11 km/s"], correct: "11 km/s" },
+                { question: "Qual é o objetivo da NASA?", choices: ["Explorar o espaço", "Vender foguetes", "Construir satélites", "Estudar o mar"], correct: "Explorar o espaço" },
+                { question: "Qual é o nome da primeira missão da NASA?", choices: ["Apollo 1", "Mercury 1", "Gemini 1", "Artemis 1"], correct: "Mercury 1" },
+                { question: "O que acontece com um foguete após completar sua missão?", choices: ["Desintegra-se", "Volta para a Terra", "Continua no espaço", "Fica em órbita"], correct: "Desintegra-se" },
+                { question: "Qual é a principal razão para o uso de foguetes?", choices: ["Custo", "Reutilização", "Velocidade", "Acesso ao espaço"], correct: "Acesso ao espaço" },
+                { question: "Qual país lançou o primeiro satélite artificial?", choices: ["Estados Unidos", "Rússia", "China", "França"], correct: "Rússia" }
+            ],
+            medium: [
+                { question: "Qual é o maior foguete já construído?", choices: ["Saturn V", "Falcon Heavy", "Space Shuttle", "Starship"], correct: "Saturn V" },
+                { question: "Qual foguete levou o homem à Lua pela primeira vez?", choices: ["Saturn V", "Falcon 9", "Soyuz", "Atlas V"], correct: "Saturn V" },
+                { question: "Qual foi o primeiro foguete reutilizável?", choices: ["Space Shuttle", "Falcon 9", "New Shepard", "Electron"], correct: "Space Shuttle" },
+                { question: "Qual é a primeira missão tripulada da NASA?", choices: ["Apollo 11", "Mercury 7", "Gemini 3", "Apollo 1"], correct: "Mercury 7" },
+                { question: "Quem foi o primeiro ser vivo enviado ao espaço?", choices: ["Yuri Gagarin", "Laika", "Apenas humanos", "Sputnick"], correct: "Laika" },
+                { question: "Qual é a função do combustível em um foguete?", choices: ["Produzir calor", "Gerar empuxo", "Controlar a direção", "Aumentar o peso"], correct: "Gerar empuxo" },
+                { question: "Qual é a altitude mínima para considerar-se no espaço?", choices: ["10 km", "50 km", "100 km", "200 km"], correct: "100 km" },
+                { question: "Qual foguete é conhecido por sua reutilização em missões comerciais?", choices: ["Soyuz", "Falcon 9", "Atlas V", "Delta IV"], correct: "Falcon 9" },
+                { question: "Qual é o nome do programa espacial da China?", choices: ["Shenzhou", "Apollo", "Gemini", "Soyuz"], correct: "Shenzhou" },
+                { question: "Qual é o principal objetivo das sondas espaciais?", choices: ["Exploração", "Transportar humanos", "Criar satélites", "Comercializar no espaço"], correct: "Exploração" },
+                { question: "Quem desenvolveu o foguete V-2?", choices: ["Robert Goddard", "Wernher von Braun", "Elon Musk", "Yuri Gagarin"], correct: "Wernher von Braun" },
+                { question: "Qual é o combustível utilizado no Saturn V?", choices: ["RP-1", "Hidrogênio", "Querosene", "Água"], correct: "RP-1" },
+                { question: "Qual é o maior foguete atualmente em uso?", choices: ["Falcon Heavy", "Saturn V", "Starship", "Space Shuttle"], correct: "Starship" },
+                { question: "Qual foi o primeiro foguete a ser lançado da Lua?", choices: ["Saturn V", "Apollo 11", "Eagle", "Artemis"], correct: "Apollo 11" },
+                { question: "Qual é a principal função do escape de um foguete?", choices: ["Aumentar a velocidade", "Controlar a direção", "Criar calor", "Reduzir o peso"], correct: "Aumentar a velocidade" },
+                { question: "Qual é o nome do primeiro foguete de combustível sólido?", choices: ["Viking", "Thor", "Titan", "Redstone"], correct: "Thor" }
+            ],
+            hard: [
+                { question: "Qual foi o primeiro foguete a chegar à órbita da Terra?", choices: ["Vostok 1", "Explorer 1", "Jupiter-C", "Vanguard 1"], correct: "Vanguard 1" },
+                { question: "Quem foi o primeiro astronauta a fazer uma caminhada espacial?", choices: ["Alexei Leonov", "Ed White", "Yuri Gagarin", "Buzz Aldrin"], correct: "Alexei Leonov" },
+                { question: "Qual é a diferença principal entre um foguete e um míssil?", choices: ["Mísseis têm controle de direção", "Foguetes têm combustível sólido", "Mísseis são lançados por militares", "Foguetes têm capacidade de carga"], correct: "Mísseis são lançados por militares" },
+                { question: "Qual é a teoria que explica a mecânica de foguetes?", choices: ["Teoria da Relatividade", "Teoria dos Jogos", "Teoria do Voo", "Teoria da Ação e Reação"], correct: "Teoria da Ação e Reação" },
+                { question: "Qual é a principal razão para o uso de foguetes espaciais em vez de aviões?", choices: ["Velocidade", "Custo", "Espaço", "Carga"], correct: "Espaço" },
+                { question: "Qual é o nome do programa que enviou os primeiros astronautas à Lua?", choices: ["Apollo", "Mercury", "Gemini", "Artemis"], correct: "Apollo" },
+                { question: "Qual é o maior desafio na construção de foguetes?", choices: ["Peso", "Custo", "Aerodinâmica", "Segurança"], correct: "Segurança" },
+                { question: "Qual país lançou a primeira sonda a Marte?", choices: ["Estados Unidos", "Rússia", "Japão", "China"], correct: "Rússia" },
+                { question: "Qual é a velocidade necessária para escapar da gravidade da Terra?", choices: ["11 km/s", "7 km/s", "8 km/s", "9 km/s"], correct: "11 km/s" },
+                { question: "Qual é a tecnologia que permite o reuso de foguetes?", choices: ["Propulsão a jato", "Propulsão elétrica", "Propulsão a combustível sólido", "Propulsão líquida"], correct: "Propulsão líquida" },
+                { question: "Qual é a principal razão pela qual os foguetes são feitos de materiais leves?", choices: ["Custo", "Segurança", "Peso", "Resistência"], correct: "Peso" },
+                { question: "Qual é a primeira missão de uma sonda a Júpiter?", choices: ["Pioneer 10", "Voyager 1", "Galileo", "Juno"], correct: "Pioneer 10" },
+                { question: "Qual foi o nome da missão que explorou Plutão?", choices: ["Voyager 1", "New Horizons", "Pioneer 11", "Cassini"], correct: "New Horizons" },
+                { question: "Qual é a estrutura que armazena combustível para foguetes?", choices: ["Tanque de combustível", "Silos", "Reservatórios", "Câmaras"], correct: "Tanque de combustível" },
+                { question: "Qual é o nome da agência espacial dos EUA?", choices: ["NASA", "ESA", "JAXA", "CNSA"], correct: "NASA" }
+            ]
+        };
+
+        let currentQuestion = 0;
+        let score = 0;
+        let userName = '';
+        let difficulty = '';
+
+        function startQuiz() {
+            userName = document.getElementById('name-input').value;
+            difficulty = document.getElementById('difficulty-select').value;
+
+            if (userName.trim() === '') {
+                alert('Por favor, digite seu nome.');
+                return;
+            }
+
+            if (!difficulty) {
+                alert('Por favor, selecione a dificuldade.');
+                return;
+            }
+
+            document.getElementById('name-container').style.display = 'none';
+            document.getElementById('quiz-container').style.display = 'block';
+
+            // Seleciona 5 perguntas aleatórias da dificuldade escolhida
+            const selectedQuestions = shuffleArray(questions[difficulty]).slice(0, 5);
+            currentQuestion = 0;
+            score = 0;
+            loadQuestion(selectedQuestions);
+        }
+
+        function loadQuestion(selectedQuestions) {
+            const questionElement = document.getElementById('question');
+            const choicesElement = document.getElementById('choices');
+            const question = selectedQuestions[currentQuestion];
+
+            questionElement.textContent = question.question;
+            choicesElement.innerHTML = '';
+
+            question.choices.forEach(choice => {
+                const button = document.createElement('button');
+                button.textContent = choice;
+                button.onclick = () => selectChoice(button, choice);
+                choicesElement.appendChild(button);
+            });
+        }
+
+        function selectChoice(button, choice) {
+            const buttons = document.querySelectorAll('#choices button');
+            buttons.forEach(btn => btn.classList.remove('selected'));
+            button.classList.add('selected');
+            checkAnswer(choice);
+        }
+
+        function checkAnswer(choice) {
+            const question = questions[difficulty][currentQuestion];
+            if (choice === question.correct) {
+                score++;
+            }
+            document.getElementById('next-button').style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < 5) {
+                loadQuestion(questions[difficulty]);
+                document.getElementById('next-button').style.display = 'none';
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            const quizContainer = document.getElementById('quiz-container');
+            const resultElement = document.getElementById('result');
+            const restartButton = document.getElementById('restart-button');
+            const rankingElement = document.getElementById('ranking');
+            const rankingList = document.getElementById('ranking-list');
+            const rankingTitle = document.getElementById('ranking-title');
+
+            quizContainer.style.display = 'none';
+            resultElement.textContent = `${userName}, você acertou ${score} de 5 perguntas!`;
+            restartButton.style.display = 'block';
+
+            // Atualizar ranking
+            let ranking = JSON.parse(localStorage.getItem(`ranking_${difficulty}`)) || [];
+            ranking.push({ name: userName, score: score });
+            ranking.sort((a, b) => b.score - a.score);
+            localStorage.setItem(`ranking_${difficulty}`, JSON.stringify(ranking));
+
+            // Mostrar ranking
+            rankingTitle.textContent = `Ranking - Dificuldade ${difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}`;
+            rankingList.innerHTML = '';
+            ranking.forEach((entry, index) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${index + 1}. ${entry.name} - ${entry.score} pontos`;
+                rankingList.appendChild(listItem);
+            });
+            rankingElement.style.display = 'block';
+
+            // Mostrar botão de limpar ranking
+            document.getElementById('clear-ranking-button').style.display = 'block';
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            userName = '';
+            difficulty = '';
+            document.getElementById('name-input').value = '';
+            document.getElementById('difficulty-select').value = '';
+            document.getElementById('name-container').style.display = 'block';
+            document.getElementById('quiz-container').style.display = 'none';
+            document.getElementById('result').textContent = '';
+            document.getElementById('restart-button').style.display = 'none';
+            document.getElementById('ranking').style.display = 'none';
+        }
+
+        function clearRanking() {
+            localStorage.removeItem(`ranking_${difficulty}`);
+            document.getElementById('ranking-list').innerHTML = '';
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        window.onload = () => {
+            // No need to load a question here since we only load questions after starting the quiz
+        };
+    </script>
+</body>
+</html>
